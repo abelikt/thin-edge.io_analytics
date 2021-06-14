@@ -18,7 +18,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Call postprocess
-      run:  bash  ./ci/postprocess.sh
+      run:  bash  ./postprocess.sh
       env:
             THEGHTOKEN : ${{ secrets.SECRET_THEGHTOKEN  }}
             GOOGLE_APPLICATION_CREDENTIALS : ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
