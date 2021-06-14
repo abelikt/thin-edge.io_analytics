@@ -12,11 +12,11 @@ source ~/env-bigquery/bin/activate
 python3 -m pytest ci/statistics
 
 # Download all the artifacts
-./ci/statistics/download_all_artifacts.py abelikt
+./statistics/download_all_artifacts.py abelikt
 
 # Trigger postprocessing and upload
 # For a yet unkown reason we need to call this via the python
 # interpreter. Otherwise the google module is not found
-python3 ./ci/statistics/process_lake.py google
+python3 ./statistics/process_lake.py google
 
 
