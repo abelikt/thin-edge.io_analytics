@@ -9,7 +9,7 @@ source ~/env-bigquery/bin/activate
 # Run the tests for postprocessing
 # Not ideal here, but for now, the environment seems to be needed
 # so that the google module is available
-python3 -m pytest ci/statistics
+python3 -m pytest statistics
 
 # Download all the artifacts
 ./statistics/download_all_artifacts.py abelikt
