@@ -1,0 +1,26 @@
+name: postprocess-workflow
+
+on:
+  workflow_dispatch:
+    branches: [ main, continuous_integration]
+  repository_dispatch:
+    types: [opened, deleted, custom]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  postprocess:
+    runs-on: [self-hosted, Linux, X64]
+    #if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: Call postprocess
+      run:  bash  echo "I would ./postprocess.sh"
+      env:
+            THEGHTOKEN : ${{ secrets.SECRET_THEGHTOKEN  }}
+            GOOGLE_APPLICATION_CREDENTIALS : ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
