@@ -3,6 +3,8 @@ name: postprocess-workflow
 on:
   workflow_dispatch:
     branches: [ main, continuous_integration]
+  repository_dispatch:
+    types: [postprocess]
 
 env:
   CARGO_TERM_COLOR: always
