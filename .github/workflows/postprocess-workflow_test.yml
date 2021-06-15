@@ -16,9 +16,6 @@ jobs:
 
     steps:
 
-    - name: checkout
-      uses: actions/checkout@v2
-
     - name: Call postprocess
-      run:  bash  echo "I would ./postprocess.sh"
+      run:  echo "I would ./postprocess.sh"
 
