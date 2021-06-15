@@ -21,6 +21,4 @@ jobs:
 
     - name: Call postprocess
       run:  bash  echo "I would ./postprocess.sh"
-      env:
-            THEGHTOKEN : ${{ secrets.SECRET_THEGHTOKEN  }}
-            GOOGLE_APPLICATION_CREDENTIALS : ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
