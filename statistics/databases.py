@@ -312,7 +312,16 @@ class CpuHistory(MeasurementBase):
                 lines = thestats.readlines()
                 for line in lines:
                     entries = line.split()
+                    # In some cases there some entries from /proc/stat here.
+                    # This can happen when the pid is not existing anymore
+                    # then /proc/pid/stat is evaluated to /proc/stat
+                    # We just filter here to match the right lines.
                     if len(entries) == 52 and entries[1] == f"({binary})":
+                        # It can happen that there are 61 lines measured
+                        # in the 60s inverval, we just ignore them
+                        if sample >= 60:
+                            logging.warning('Omited a sample from mid %s', measurement_index)
+                            break
                         utime = int(entries[13])  # utime
                         stime = int(entries[14])  # stime
                         cutime = int(entries[15])  # cutime
@@ -329,6 +338,7 @@ class CpuHistory(MeasurementBase):
                         )
                         sample += 1
                         self.row_id += 1
+
 
         except FileNotFoundError as err:
             logging.warning("File not found, skipping for now! %s", str(err))
