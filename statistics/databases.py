@@ -318,10 +318,10 @@ class CpuHistory(MeasurementBase):
                     # We just filter here to match the right lines.
                     if len(entries) == 52 and entries[1] == f"({binary})":
                         # It can happen that there are 61 lines measured
-                        # in the 60s inverval, we just ignore them
-                        if sample >= 60:
+                        # e.g. in the 60s inverval, we just ignore them
+                        if sample >= self.data_length:
                             logging.warning('Omited a sample from mid %s', measurement_index)
-                            break
+                            continue
                         utime = int(entries[13])  # utime
                         stime = int(entries[14])  # stime
                         cutime = int(entries[15])  # cutime
