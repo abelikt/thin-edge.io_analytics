@@ -219,10 +219,6 @@ class MeasurementMetadata(MeasurementBase):
         self.array = []
         self.client = client
 
-        # TODO move to baseclass
-        self.database = f"thin-edge-statistics.ThinEdgeDataSet.{self.name}"
-
-
     def scrap_data(self, file: str) -> Tuple[str, str, str, str, str]:
         """Read measurement data from file"""
 
