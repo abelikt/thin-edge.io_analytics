@@ -10,7 +10,7 @@
 # pip install pytest
 # pip install pytest-mock
 #
-# export GOOGLE_APPLICATION_CREDENTIALS="/home/micha/Project-SAG/Statistics/sturdy-mechanic-312713-14b2e55c4ad0.json"
+# export GOOGLE_APPLICATION_CREDENTIALS="/home/micha/Project-SAG/Statistics/thin-edge-statistics-f255760982fa.json"
 
 import argparse
 import logging

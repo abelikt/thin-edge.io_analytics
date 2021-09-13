@@ -155,7 +155,8 @@ class MeasurementBase(ABC):
             self.name = name + "_test"
         else:
             self.name = name
-        self.database = f"sturdy-mechanic-312713.ADataSet.{self.name}"
+
+        self.database = f"thin-edge-statistics.ThinEdgeDataSet.{self.name}"
 
     def postprocess(self, folders, testname, filename, binary):
         """Postprocess all relevant folders"""
@@ -219,7 +220,8 @@ class MeasurementMetadata(MeasurementBase):
         self.client = client
 
         # TODO move to baseclass
-        self.database = f"sturdy-mechanic-312713.ADataSet.{self.name}"
+        self.database = f"thin-edge-statistics.ThinEdgeDataSet.{self.name}"
+
 
     def scrap_data(self, file: str) -> Tuple[str, str, str, str, str]:
         """Read measurement data from file"""
