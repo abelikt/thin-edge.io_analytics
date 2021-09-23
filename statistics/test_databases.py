@@ -1,3 +1,10 @@
+
+"""
+
+python -m pytest --capture=no test_databases.py
+
+"""
+
 import os
 import pytest
 
@@ -148,6 +155,17 @@ class TestCpuHistory:
         # mock.assert_called_once()
         assert mock.call_count == 3
         # mock.assert_called_with
+
+    def test_postprocess_collectd(self):
+        lake = os.path.expanduser("~/DataLakeTest")
+        base = db.CpuHistory(lake, "name", 3, 10, None, None)
+
+        thefile ="/home/micha/thin-edge.io/tests/PySys/publish_sawmill_record_statistics/Output/linux/gauge-mosquitto-utime.rrd.txt"
+        thefile2 ="/home/micha/thin-edge.io/tests/PySys/publish_sawmill_record_statistics/Output/linux/gauge-mosquitto-stime.rrd.txt"
+        mid = 0
+        binary = None
+        base.scrap_data_collectd(thefile, thefile2, mid, binary)
+
 
 
 class TestCpuHistoryStacked:

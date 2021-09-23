@@ -1,6 +1,6 @@
 # Hint install pytest in the google environment,
 # otherwise it will watch for the google modules
-# outside of the envionment.
+# outside of the environment.
 
 # Workaround:
 # python -m pytest test_process_lake.py

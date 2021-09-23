@@ -298,6 +298,49 @@ class CpuHistory(MeasurementBase):
         self.array = np.zeros((self.size, 7), dtype=np.int32)
         self.row_id = 0
 
+    def scrap_data_collectd(self, thefile, thefile2, measurement_index, binary):
+
+        sample = 0
+        with open(thefile) as thestats:
+            with open(thefile2) as thestats2:
+                lines = thestats.readlines()
+                lines2 = thestats2.readlines()
+                #for line in lines:
+                #    print(line)
+                for i in range(len(lines)):
+                    #print( lines[i].strip(), lines2[i].strip())
+
+                    timestamp, utime_str = lines[i].split()
+                    timestamp2, stime_str = lines2[i].split()
+                    assert timestamp == timestamp2
+
+                    if utime_str == 'None':
+                        utime = 0
+                    else:
+                        utime = int(float( utime_str))
+
+                    if stime_str =='None':
+                        stime = 0
+                    else:
+                        stime = int(float( stime_str))
+
+                    print( utime, stime )
+
+                    cutime = 0  # cutime
+                    csime =  0  # cstime
+
+                    self.insert_line(
+                        idx=self.row_id,
+                        mid=measurement_index,
+                        sample=sample,
+                        utime=utime,
+                        stime=stime,
+                        cutime=cutime,
+                        cstime=csime,
+                    )
+                    sample += 1
+                    self.row_id += 1
+
     def scrap_data(self, thefile, measurement_index, binary):
         """Read measurement data from file /proc/pid/stat
 
