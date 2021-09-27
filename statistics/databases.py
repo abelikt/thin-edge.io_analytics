@@ -616,7 +616,7 @@ class MemoryHistory(MeasurementBase):
     def scrap_data_collectd(self, thefile, mesaurement_index, arr):
         pass
 
-        folder = "/home/micha/DataLakeTest/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
+        folder = "/home/pi/DataLakeTest/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
 
         if thefile == "tedge-mapper":
             thefile = "mapper-c8y" # Adjust filename (TODO)
