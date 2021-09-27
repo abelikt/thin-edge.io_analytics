@@ -84,10 +84,11 @@ def generate(style, show, lake, testdata, earliest_valid):
     """Generate postprocessed databases and upload them
     Parameters:
     """
-    client, dbo, integer, conn = db.get_database(style)
 
     logging.info("Unzip Results")
     unzip_results(lake)
+
+    client, dbo, integer, conn = db.get_database(style)
 
     logging.info("Sumarize List")
 

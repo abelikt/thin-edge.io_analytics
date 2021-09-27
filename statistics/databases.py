@@ -324,7 +324,7 @@ class CpuHistory(MeasurementBase):
                     else:
                         stime = int(float( stime_str))
 
-                    print( utime, stime )
+                    #print( utime, stime )
 
                     cutime = 0  # cutime
                     csime =  0  # cstime
@@ -544,10 +544,7 @@ class CpuHistoryStacked(MeasurementBase):
 
     def show(self):
         """Show content with matplotlib"""
-        import matplotlib.pyplot as plt
-
-        fig, axis = plt.subplots()
-
+        import matplotlib.pyplot as plte
         for i in range(len(self.fields)):
             if i % 2 == 0:
                 style = "-o"
@@ -594,6 +591,64 @@ class MemoryHistory(MeasurementBase):
         self.array = np.zeros((self.size, 8), dtype=np.int32)
         self.client = client
         self.row_id = 0
+
+    def scrap_data_collectd(self, thefile, mesaurement_index, arr):
+        pass
+
+        folder = "/home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux"
+
+
+        filelist = [
+            "gauge-mapper-c8y-data.rrd.txt",
+            "gauge-mapper-c8y-resident.rrd.txt",
+            "gauge-mapper-c8y-shared.rrd.txt",
+            "gauge-mapper-c8y-size.rrd.txt",
+            "gauge-mapper-c8y-text.rrd.txt",
+
+            #"gauge-mosquitto-shared.rrd",
+            #"gauge-mosquitto-resident.rrd",
+            #"gauge-mosquitto-size.rrd",
+            #"gauge-mosquitto-data.rrd",
+            #"gauge-mosquitto-text.rrd",
+
+            #"gauge-mapper-c8y-stime.rrd",
+            #"gauge-mapper-c8y-utime.rrd",
+            #"gauge-mosquitto-utime.rrd",
+            #"gauge-mosquitto-stime.rrd",
+            ]
+
+        types = ["size", "resident", "shared", "text", "data"]
+        db = { "size":{}, "resident":{}, "shared":{}, "text":{}, "data":{}  }
+        for i,f in enumerate(types):
+            #print (i,f)
+            myfile = f"gauge-mapper-c8y-{f}.rrd.txt"
+            thefile = os.path.join(folder, myfile)
+            index = 0
+            with open(thefile) as thestats:
+                    lines = thestats.readlines()
+                    for i in range(len(lines)):
+                        #print( lines[i].strip())
+                        timestamp, utime_str = lines[i].split()
+                        if utime_str == "None":
+                            utime_str = 0
+                        db[f][i] = ( timestamp, utime_str)
+
+        #print(db)
+
+        for sample in range(60):
+            #print( db["size"][sample][1] )
+            self.insert_line(
+                idx=self.row_id,
+                mid=mesaurement_index,
+                sample=sample,
+                size = int( float(db["size"][sample][1] )),
+                resident = int( float(db["resident"][sample][1] )),
+                shared = int( float(db["shared"][sample][1] )),
+                text = int( float(db["text"][sample][1] )),
+                data = int( float(db["data"][sample][1] )),
+            )
+            self.row_id += 1
+
 
     def scrap_data(self, thefile, mesaurement_index, arr):
         """Read measurement data from file"""

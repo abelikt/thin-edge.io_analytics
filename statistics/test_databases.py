@@ -103,6 +103,20 @@ class TestMemoryHistory:
 
         mock.assert_has_calls(calls)
 
+    def test_scrap_data_collectd(self, mocker):
+        # /home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux
+
+        lake = os.path.expanduser("~/DataLakeTest")
+
+        base = db.MemoryHistory(lake, "name", 1, 60, None, None)
+        base.scrap_data_collectd("thefile", 0, "unused")
+
+        #print(base.array)
+        assert base.array[0].tolist() == [0, 0, 0, 5460, 1020,  866,  731, 2894]
+        assert base.array[57].tolist() == [57, 0, 57, 5457, 1024,  866,  731, 2892]
+        assert base.array[58].tolist() == [58, 0, 58, 0, 0, 0, 0, 0]
+
+
     def test_upate_table(self, mocker):
         lake = os.path.expanduser("~/DataLakeTest")
 
@@ -120,12 +134,6 @@ class TestCpuHistory:
     def test_update_table_creates_attributes(self, mocker):
         lake = os.path.expanduser("~/DataLakeTest")
         base = db.CpuHistory(lake, "name", 3, 10, None, None)
-        mocker.patch.object(base, "upload_table")
-
-        base.update_table()
-
-        assert base.job_config != None
-        assert base.json_data != None
 
     def test_update_table_calls_upload(self, mocker):
         lake = os.path.expanduser("~/DataLakeTest")
@@ -158,13 +166,29 @@ class TestCpuHistory:
 
     def test_postprocess_collectd(self):
         lake = os.path.expanduser("~/DataLakeTest")
-        base = db.CpuHistory(lake, "name", 3, 10, None, None)
+        base = db.CpuHistory(lake, "name", 1, 60, None, None)
 
-        thefile ="/home/micha/thin-edge.io/tests/PySys/publish_sawmill_record_statistics/Output/linux/gauge-mosquitto-utime.rrd.txt"
-        thefile2 ="/home/micha/thin-edge.io/tests/PySys/publish_sawmill_record_statistics/Output/linux/gauge-mosquitto-stime.rrd.txt"
+        folder = "/home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux"
+        thefile = os.path.join(folder, "gauge-mosquitto-utime.rrd.txt")
+        thefile2 = os.path.join(folder, "gauge-mosquitto-stime.rrd.txt")
         mid = 0
         binary = None
         base.scrap_data_collectd(thefile, thefile2, mid, binary)
+
+        #print(base.array)
+        #print(base.array[57])
+        #print(base.array[57][0])
+        #print(base.array[57][0].tolist())
+        # [57  0 57 63 97  0  0]
+        assert base.array[0].tolist() == [0, 0, 0,21,11,0,0]
+        assert base.array[57][0]==57
+        assert base.array[57][1]==0
+        assert base.array[57][2]==57
+        assert base.array[57][3]==63
+        assert base.array[57][4]==97
+        assert base.array[57][5]==0
+        assert base.array[57][6]==0
+
 
 
 
