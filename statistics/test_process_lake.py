@@ -29,20 +29,21 @@ def test_get_measurement_foders():
         "results_1_unpack",
         "results_2_unpack",
         "results_4_unpack",
+        "results_5_unpack", # uses collectd
     ]
     assert ret == exp
 
 
 def test_get_relevant_measurement_folders_real():
 
-    exp = ["results_1_unpack", "results_2_unpack", "results_4_unpack"]
+    exp = ["results_1_unpack", "results_2_unpack", "results_4_unpack",  "results_5_unpack"]
     lake = os.path.expanduser("~/DataLakeTest")
     valid = "results_1_unpack"
 
     ret, valid = pl.get_relevant_measurement_folders(lake, valid)
 
     assert ret == exp
-    assert valid == 3
+    assert valid == 4
 
 
 def test_get_relevant_measurement_folders_mocked(mocker):
@@ -165,7 +166,7 @@ def test_generate(mocker):
 
 def test_postprocess_vals_cpu():
     """This is an integration test!
-    Tightnen current functionality for now
+    Tighten current functionality for now
     Probably too much for a simple test
     """
     lake = os.path.expanduser("~/DataLakeTest")
@@ -214,7 +215,7 @@ def test_postprocess_vals_cpu():
 
     exp = np.array(data, dtype=np.int32)
 
-    extensive_check = False
+    extensive_check = True
     if extensive_check:
         print("\nExpect")
         print(len(exp))

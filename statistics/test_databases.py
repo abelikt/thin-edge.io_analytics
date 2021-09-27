@@ -142,8 +142,6 @@ class TestMemoryHistory:
         mock_c.assert_has_calls(calls_c)
 
     def test_scrap_data_collectd_not_existing(self, mocker):
-        # /home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux
-
         lake = os.path.expanduser("~/DataLakeTest")
 
         base = db.MemoryHistory(lake, "name", 1, 60, None, None)
@@ -153,7 +151,6 @@ class TestMemoryHistory:
 
 
     def test_scrap_data_collectd(self, mocker):
-        # /home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux
 
         lake = os.path.expanduser("~/DataLakeTest")
 
@@ -263,7 +260,8 @@ class TestCpuHistory:
         lake = os.path.expanduser("~/DataLakeTest")
         base = db.CpuHistory(lake, "name", 1, 60, None, None)
 
-        folder = "/home/micha/DataLakeTest/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
+        folder = "/home/micha/DataLakeTest/results_5_unpack/" \
+            + "PySys/publish_sawmill_record_statistics/Output/linux"
 
         thefile = os.path.join(folder, "gauge-mosquitto-utime.rrd.txt")
         thefile2 = os.path.join(folder, "gauge-mosquitto-stime.rrd.txt")
@@ -271,21 +269,8 @@ class TestCpuHistory:
         binary = None
         base.scrap_data_collectd(thefile, thefile2, mid, binary)
 
-        #print(base.array)
-        #print(base.array[57])
-        #print(base.array[57][0])
-        #print(base.array[57][0].tolist())
-        # [57  0 57 63 97  0  0]
         assert base.array[0].tolist() == [0, 0, 0,21,11,0,0]
-        assert base.array[57][0]==57
-        assert base.array[57][1]==0
-        assert base.array[57][2]==57
-        assert base.array[57][3]==63
-        assert base.array[57][4]==97
-        assert base.array[57][5]==0
-        assert base.array[57][6]==0
-
-
+        assert base.array[57].tolist() == [57, 0, 57,63,97,0,0]
 
 
 class TestCpuHistoryStacked:

@@ -327,7 +327,7 @@ class CpuHistory(MeasurementBase):
                     #print( utime, stime )
 
                     cutime = 0  # cutime
-                    csime =  0  # cstime
+                    cstime =  0  # cstime
 
                     self.insert_line(
                         idx=self.row_id,
@@ -336,7 +336,7 @@ class CpuHistory(MeasurementBase):
                         utime=utime,
                         stime=stime,
                         cutime=cutime,
-                        cstime=csime,
+                        cstime=cstime,
                     )
                     sample += 1
                     self.row_id += 1
@@ -359,14 +359,14 @@ class CpuHistory(MeasurementBase):
                     # We just filter here to match the right lines.
                     if len(entries) == 52 and entries[1] == f"({binary})":
                         # It can happen that there are 61 lines measured
-                        # e.g. in the 60s inverval, we just ignore them
+                        # e.g. in the 60s interval, we just ignore them
                         if sample >= self.data_length:
-                            logging.warning('Omited a sample from mid %s', measurement_index)
+                            logging.warning('Omitted a sample from mid %s', measurement_index)
                             continue
                         utime = int(entries[13])  # utime
                         stime = int(entries[14])  # stime
                         cutime = int(entries[15])  # cutime
-                        csime = int(entries[16])  # cstime
+                        cstime = int(entries[16])  # cstime
 
                         self.insert_line(
                             idx=self.row_id,
@@ -375,7 +375,7 @@ class CpuHistory(MeasurementBase):
                             utime=utime,
                             stime=stime,
                             cutime=cutime,
-                            cstime=csime,
+                            cstime=cstime,
                         )
                         sample += 1
                         self.row_id += 1
@@ -384,7 +384,7 @@ class CpuHistory(MeasurementBase):
         except FileNotFoundError as err:
             logging.warning("File not found, skipping for now! %s", str(err))
 
-        # In case that there are not enough lines in the file fixx with zeros
+        # In case that there are not enough lines in the file fix with zeros
         # Can happen, depending on when the data recorder process is killed.
 
         missing = self.data_length - sample
@@ -410,8 +410,8 @@ class CpuHistory(MeasurementBase):
             statsfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
 
             if filename=="stat_mapper_stdout":
-                filename_rrd1 = "gauge-mosquitto-utime"
-                filename_rrd2 = "gauge-mosquitto-stime"
+                filename_rrd1 = "gauge-mapper-c8y-utime"
+                filename_rrd2 = "gauge-mapper-c8y-stime"
             elif filename ==  "stat_mosquitto_stdout":
                 filename_rrd1 = "gauge-mosquitto-utime"
                 filename_rrd2 = "gauge-mosquitto-stime"
@@ -421,15 +421,15 @@ class CpuHistory(MeasurementBase):
 
             rrdfile1 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd1}.rrd.txt"
             rrdfile2 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd2}.rrd.txt"
-
+            print(statsfile)
             if os.path.exists(statsfile):
-                self.scrap_data(statsfile, index, self)
+                self.scrap_data(statsfile, index, binary)
             elif os.path.exists(rrdfile1):
                 self.scrap_data_collectd(rrdfile1, rrdfile2, index, self)
             else:
                 #breakpoint()
                 #raise SystemError("File does not exist !!!")
-                pass
+                print("Upsups")
 
     def insert_line(self, idx, mid, sample, utime, stime, cutime, cstime):
         """Insert a line into the table"""
@@ -752,7 +752,7 @@ class MemoryHistory(MeasurementBase):
 
         plt.show()
 
-    # Keep this in case we want real SQL publshing again
+    # Keep this in case we want real SQL publishing again
     #
     #    def update_table_one_by_one(self, dbo):
     #        for i in range(self.size):
