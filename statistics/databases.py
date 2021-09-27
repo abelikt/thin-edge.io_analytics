@@ -408,15 +408,28 @@ class CpuHistory(MeasurementBase):
             index = self.foldername_to_index(folder)
 
             statsfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
-            rrdfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/gauge.rrd.txt"
+
+            if filename=="stat_mapper_stdout":
+                filename_rrd1 = "gauge-mosquitto-utime"
+                filename_rrd2 = "gauge-mosquitto-stime"
+            elif filename ==  "stat_mosquitto_stdout":
+                filename_rrd1 = "gauge-mosquitto-utime"
+                filename_rrd2 = "gauge-mosquitto-stime"
+            else:
+                print(filename)
+                raise SystemError("Ups")
+
+            rrdfile1 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd1}.rrd.txt"
+            rrdfile2 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd2}.rrd.txt"
 
             if os.path.exists(statsfile):
                 self.scrap_data(statsfile, index, self)
-            elif os.path.exists(rrdfile):
-                self.scrap_data_collectd(rrdfile, index, self)
+            elif os.path.exists(rrdfile1):
+                self.scrap_data_collectd(rrdfile1, rrdfile2, index, self)
             else:
                 #breakpoint()
-                raise SystemError("File does not exist !!!")
+                #raise SystemError("File does not exist !!!")
+                pass
 
     def insert_line(self, idx, mid, sample, utime, stime, cutime, cstime):
         """Insert a line into the table"""
@@ -550,7 +563,9 @@ class CpuHistoryStacked(MeasurementBase):
 
     def show(self):
         """Show content with matplotlib"""
-        import matplotlib.pyplot as plte
+        import matplotlib.pyplot as plt
+        fig, axis = plt.subplots()
+
         for i in range(len(self.fields)):
             if i % 2 == 0:
                 style = "-o"
@@ -601,7 +616,7 @@ class MemoryHistory(MeasurementBase):
     def scrap_data_collectd(self, thefile, mesaurement_index, arr):
         pass
 
-        folder = "/home/micha/DataLakeTest/results_5_unpack/publish_sawmill_record_statistics/Output/linux"
+        folder = "/home/micha/DataLakeTest/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
 
         if thefile == "tedge-mapper":
             thefile = "mapper-c8y" # Adjust filename (TODO)
@@ -710,7 +725,8 @@ class MemoryHistory(MeasurementBase):
                 self.scrap_data_collectd(rrdfile, index, self)
             else:
                 #breakpoint()
-                raise SystemError("File does not exist !!!")
+                #raise SystemError("File does not exist !!!")
+                pass
 
     def insert_line(self, idx, mid, sample, size, resident, shared, text, data):
         """Insert a line into the table"""
