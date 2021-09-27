@@ -80,6 +80,7 @@ class TestMemoryHistory:
 
         base = db.MemoryHistory(lake, "name", 3, 10, None, None)
         mock = mocker.patch.object(base, "scrap_data")
+        ex_mock = mocker.patch("os.path.exists", return_value=True)
 
         folders = [
             "results_1_unpack",
@@ -103,13 +104,61 @@ class TestMemoryHistory:
 
         mock.assert_has_calls(calls)
 
+    def test_postrocess_with_collectd(self, mocker):
+        lake = os.path.expanduser("~/DataLakeTest")
+
+        base = db.MemoryHistory(lake, "name", 3, 10, None, None)
+        mock = mocker.patch.object(base, "scrap_data")
+        mock_c = mocker.patch.object(base, "scrap_data_collectd")
+
+        ex_mock = mocker.patch("os.path.exists", side_effect = [True, True, True, False, True])
+
+        folders = [
+            "results_1_unpack",
+            "results_2_unpack",
+            "results_4_unpack",
+            "results_5_unpack", # with collectd
+        ]
+
+        exp = "{}/{}/PySys/name/Output/linux/filename.out"
+        exp_c = "{}/{}/PySys/name/Output/linux/gauge.rrd.txt"
+
+        calls = [
+            mocker.call(exp.format(lake, folders[0]), 1, base),
+            mocker.call(exp.format(lake, folders[1]), 2, base),
+            mocker.call(exp.format(lake, folders[2]), 4, base),
+        ]
+        calls_c = [
+            mocker.call(exp_c.format(lake, folders[3]), 5, base),
+        ]
+
+        base.postprocess(folders, "name", "filename", "binary")
+
+        # mock.assert_called_once_with()
+
+        assert mock.call_count == 3
+
+        mock.assert_has_calls(calls)
+        mock_c.assert_has_calls(calls_c)
+
+    def test_scrap_data_collectd_not_existing(self, mocker):
+        # /home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux
+
+        lake = os.path.expanduser("~/DataLakeTest")
+
+        base = db.MemoryHistory(lake, "name", 1, 60, None, None)
+
+        with pytest.raises(SystemError):
+            base.scrap_data_collectd("bob", 0, "unused")
+
+
     def test_scrap_data_collectd(self, mocker):
         # /home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux
 
         lake = os.path.expanduser("~/DataLakeTest")
 
         base = db.MemoryHistory(lake, "name", 1, 60, None, None)
-        base.scrap_data_collectd("thefile", 0, "unused")
+        base.scrap_data_collectd("tedge-mapper", 0, "unused")
 
         #print(base.array)
         assert base.array[0].tolist() == [0, 0, 0, 5460, 1020,  866,  731, 2894]
@@ -117,7 +166,7 @@ class TestMemoryHistory:
         assert base.array[58].tolist() == [58, 0, 58, 0, 0, 0, 0, 0]
 
 
-    def test_upate_table(self, mocker):
+    def test_update_table(self, mocker):
         lake = os.path.expanduser("~/DataLakeTest")
 
         base = db.MemoryHistory(lake, "name", 3, 10, None, None)
@@ -168,7 +217,8 @@ class TestCpuHistory:
         lake = os.path.expanduser("~/DataLakeTest")
         base = db.CpuHistory(lake, "name", 1, 60, None, None)
 
-        folder = "/home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux"
+        folder = "/home/micha/DataLakeTest/results_5_unpack/publish_sawmill_record_statistics/Output/linux"
+
         thefile = os.path.join(folder, "gauge-mosquitto-utime.rrd.txt")
         thefile2 = os.path.join(folder, "gauge-mosquitto-stime.rrd.txt")
         mid = 0

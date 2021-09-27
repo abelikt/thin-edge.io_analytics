@@ -595,15 +595,21 @@ class MemoryHistory(MeasurementBase):
     def scrap_data_collectd(self, thefile, mesaurement_index, arr):
         pass
 
-        folder = "/home/micha/DataLakeTest2/results_22/PySys/publish_sawmill_record_statistics/Output/linux"
+        folder = "/home/micha/DataLakeTest/results_5_unpack/publish_sawmill_record_statistics/Output/linux"
 
+        if thefile == "tedge-mapper":
+            thefile = "mapper-c8y" # Adjust filename (TODO)
+        elif thefile == "mosquitto":
+            pass
+        else:
+            raise SystemError("Unknown file")
 
         filelist = [
-            "gauge-mapper-c8y-data.rrd.txt",
-            "gauge-mapper-c8y-resident.rrd.txt",
-            "gauge-mapper-c8y-shared.rrd.txt",
-            "gauge-mapper-c8y-size.rrd.txt",
-            "gauge-mapper-c8y-text.rrd.txt",
+            f"gauge-{thefile}-data.rrd.txt",
+            f"gauge-{thefile}-resident.rrd.txt",
+            f"gauge-{thefile}-shared.rrd.txt",
+            f"gauge-{thefile}-size.rrd.txt",
+            f"gauge-{thefile}-text.rrd.txt",
 
             #"gauge-mosquitto-shared.rrd",
             #"gauge-mosquitto-resident.rrd",
@@ -699,10 +705,21 @@ class MemoryHistory(MeasurementBase):
         for folder in folders:
             index = self.foldername_to_index(folder)
 
-            statsfile = (
-                f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
-            )
-            self.scrap_data(statsfile, index, self)
+            statsfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
+
+            rrdfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/gauge.rrd.txt"
+
+            if os.path.exists(statsfile):
+                self.scrap_data(statsfile, index, self)
+            elif os.path.exists(rrdfile):
+                self.scrap_data_collectd(rrdfile, index, self)
+            else:
+                #breakpoint()
+                raise SystemError("File does not exist !!!")
+
+
+
+
 
     def insert_line(self, idx, mid, sample, size, resident, shared, text, data):
         """Insert a line into the table"""
