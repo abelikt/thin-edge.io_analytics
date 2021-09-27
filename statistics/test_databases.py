@@ -213,7 +213,53 @@ class TestCpuHistory:
         assert mock.call_count == 3
         # mock.assert_called_with
 
-    def test_postprocess_collectd(self):
+    def test_postprocess_collectd(self, mocker):
+        lake = os.path.expanduser("~/DataLakeTest")
+        base = db.CpuHistory(lake, "name", 3, 10, None, None)
+        mock = mocker.patch.object(base, "scrap_data")
+        mock_c = mocker.patch.object(base, "scrap_data_collectd")
+
+        ex_mock = mocker.patch("os.path.exists", side_effect=[True, True, True, False, True])
+
+        folders = [
+            "results_1_unpack",
+            "results_2_unpack",
+            "results_4_unpack",
+            "results_5_unpack",
+        ]
+        base.postprocess(
+            folders,
+            "publish_sawmill_record_statistics",
+            "stat_mapper_stdout",
+            "tedge_mapper",
+        )
+
+        # mock.assert_called_once()
+        assert mock.call_count == 3
+        assert mock_c.call_count == 1
+        # mock.assert_called_with
+
+
+    def test_postprocess_collectd_fail_wtf(self, mocker):
+        lake = os.path.expanduser("~/DataLakeTest")
+        base = db.CpuHistory(lake, "name", 3, 10, None, None)
+        mock = mocker.patch.object(base, "scrap_data")
+        mock_c = mocker.patch.object(base, "scrap_data_collectd")
+
+        ex_mock = mocker.patch("os.path.exists", return_value=False)
+
+        folders = [
+            "results_66_unpack",
+        ]
+        with pytest.raises(SystemError):
+            base.postprocess(
+                folders,
+                "nope",
+                "nope",
+                "nope",
+            )
+
+    def test_postprocess_collectd_real_data(self):
         lake = os.path.expanduser("~/DataLakeTest")
         base = db.CpuHistory(lake, "name", 1, 60, None, None)
 

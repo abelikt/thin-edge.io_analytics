@@ -402,15 +402,21 @@ class CpuHistory(MeasurementBase):
             self.row_id += 1
 
     def postprocess(self, folders, testname, filename, binary):
+
         """Postprocess all relevant folders"""
         for folder in folders:
             index = self.foldername_to_index(folder)
 
-            statsfile = (
-                f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
-            )
+            statsfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
+            rrdfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/gauge.rrd.txt"
 
-            self.scrap_data(statsfile, index, binary)
+            if os.path.exists(statsfile):
+                self.scrap_data(statsfile, index, self)
+            elif os.path.exists(rrdfile):
+                self.scrap_data_collectd(rrdfile, index, self)
+            else:
+                #breakpoint()
+                raise SystemError("File does not exist !!!")
 
     def insert_line(self, idx, mid, sample, utime, stime, cutime, cstime):
         """Insert a line into the table"""
@@ -602,7 +608,7 @@ class MemoryHistory(MeasurementBase):
         elif thefile == "mosquitto":
             pass
         else:
-            raise SystemError("Unknown file")
+            raise SystemError("Unknown file / type")
 
         filelist = [
             f"gauge-{thefile}-data.rrd.txt",
@@ -610,17 +616,6 @@ class MemoryHistory(MeasurementBase):
             f"gauge-{thefile}-shared.rrd.txt",
             f"gauge-{thefile}-size.rrd.txt",
             f"gauge-{thefile}-text.rrd.txt",
-
-            #"gauge-mosquitto-shared.rrd",
-            #"gauge-mosquitto-resident.rrd",
-            #"gauge-mosquitto-size.rrd",
-            #"gauge-mosquitto-data.rrd",
-            #"gauge-mosquitto-text.rrd",
-
-            #"gauge-mapper-c8y-stime.rrd",
-            #"gauge-mapper-c8y-utime.rrd",
-            #"gauge-mosquitto-utime.rrd",
-            #"gauge-mosquitto-stime.rrd",
             ]
 
         types = ["size", "resident", "shared", "text", "data"]
@@ -716,10 +711,6 @@ class MemoryHistory(MeasurementBase):
             else:
                 #breakpoint()
                 raise SystemError("File does not exist !!!")
-
-
-
-
 
     def insert_line(self, idx, mid, sample, size, resident, shared, text, data):
         """Insert a line into the table"""
