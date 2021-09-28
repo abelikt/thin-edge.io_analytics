@@ -29,14 +29,19 @@ def test_get_measurement_foders():
         "results_1_unpack",
         "results_2_unpack",
         "results_4_unpack",
-        "results_5_unpack", # uses collectd
+        "results_5_unpack",  # uses collectd
     ]
     assert ret == exp
 
 
 def test_get_relevant_measurement_folders_real():
 
-    exp = ["results_1_unpack", "results_2_unpack", "results_4_unpack",  "results_5_unpack"]
+    exp = [
+        "results_1_unpack",
+        "results_2_unpack",
+        "results_4_unpack",
+        "results_5_unpack",
+    ]
     lake = os.path.expanduser("~/DataLakeTest")
     valid = "results_1_unpack"
 

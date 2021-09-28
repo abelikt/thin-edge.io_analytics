@@ -1,4 +1,3 @@
-
 """
 
 python -m pytest --capture=no test_databases.py
@@ -111,13 +110,15 @@ class TestMemoryHistory:
         mock = mocker.patch.object(base, "scrap_data")
         mock_c = mocker.patch.object(base, "scrap_data_collectd")
 
-        ex_mock = mocker.patch("os.path.exists", side_effect = [True, True, True, False, True])
+        ex_mock = mocker.patch(
+            "os.path.exists", side_effect=[True, True, True, False, True]
+        )
 
         folders = [
             "results_1_unpack",
             "results_2_unpack",
             "results_4_unpack",
-            "results_5_unpack", # with collectd
+            "results_5_unpack",  # with collectd
         ]
 
         exp = "{}/{}/PySys/name/Output/linux/filename.out"
@@ -149,20 +150,18 @@ class TestMemoryHistory:
         with pytest.raises(SystemError):
             base.scrap_data_collectd("bob", 0)
 
-
     def test_scrap_data_collectd(self, mocker):
 
         lake = os.path.expanduser("~/DataLakeTest")
 
         base = db.MemoryHistory(lake, "name", 1, 60, None, None)
         folder = "results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
-        thefolder = os.path.join(lake,folder)
+        thefolder = os.path.join(lake, folder)
         base.scrap_data_collectd(thefolder, 0)
 
-        assert base.array[0].tolist() == [0, 0, 0, 5460, 1020,  866,  731, 2894]
-        assert base.array[57].tolist() == [57, 0, 57, 5457, 1024,  866,  731, 2892]
+        assert base.array[0].tolist() == [0, 0, 0, 5460, 1020, 866, 731, 2894]
+        assert base.array[57].tolist() == [57, 0, 57, 5457, 1024, 866, 731, 2892]
         assert base.array[58].tolist() == [58, 0, 58, 0, 0, 0, 0, 0]
-
 
     def test_update_table(self, mocker):
         lake = os.path.expanduser("~/DataLakeTest")
@@ -217,7 +216,9 @@ class TestCpuHistory:
         mock = mocker.patch.object(base, "scrap_data")
         mock_c = mocker.patch.object(base, "scrap_data_collectd")
 
-        ex_mock = mocker.patch("os.path.exists", side_effect=[True, True, True, False, True])
+        ex_mock = mocker.patch(
+            "os.path.exists", side_effect=[True, True, True, False, True]
+        )
 
         folders = [
             "results_1_unpack",
@@ -234,7 +235,6 @@ class TestCpuHistory:
 
         assert mock.call_count == 3
         assert mock_c.call_count == 1
-
 
     def test_postprocess_collectd_fail_wtf(self, mocker):
         lake = os.path.expanduser("~/DataLakeTest")
@@ -259,8 +259,11 @@ class TestCpuHistory:
         lake = os.path.expanduser("~/DataLakeTest")
         base = db.CpuHistory(lake, "name", 1, 60, None, None)
 
-        folder = lake + "/results_5_unpack/" \
+        folder = (
+            lake
+            + "/results_5_unpack/"
             + "PySys/publish_sawmill_record_statistics/Output/linux"
+        )
 
         thefile_utime = os.path.join(folder, "gauge-mosquitto-utime.rrd.txt")
         thefile_stime = os.path.join(folder, "gauge-mosquitto-stime.rrd.txt")
@@ -268,8 +271,8 @@ class TestCpuHistory:
 
         base.scrap_data_collectd(thefile_utime, thefile_stime, mid)
 
-        assert base.array[0].tolist() == [0, 0, 0,21,11,0,0]
-        assert base.array[57].tolist() == [57, 0, 57,63,97,0,0]
+        assert base.array[0].tolist() == [0, 0, 0, 21, 11, 0, 0]
+        assert base.array[57].tolist() == [57, 0, 57, 63, 97, 0, 0]
 
 
 class TestCpuHistoryStacked:

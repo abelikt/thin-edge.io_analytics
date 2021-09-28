@@ -312,9 +312,9 @@ class CpuHistory(MeasurementBase):
         for i in range(self.data_length):
 
             utime = 0
-            stime =  0
+            stime = 0
             cutime = 0  # cutime
-            cstime =  0  # cstime
+            cstime = 0  # cstime
 
             self.insert_line(
                 idx=self.row_id,
@@ -329,8 +329,7 @@ class CpuHistory(MeasurementBase):
             self.row_id += 1
 
     def scrap_data_collectd(self, file_utime, file_stime, measurement_index):
-        """Read measurement data from collectd export
-        """
+        """Read measurement data from collectd export"""
 
         sample = 0
         try:
@@ -339,9 +338,8 @@ class CpuHistory(MeasurementBase):
                     lines_utime = thestats_utime.readlines()
                     lines_stime = thestats_stime.readlines()
 
-
-                    assert len(lines_utime)==self.data_length
-                    assert len(lines_stime)==self.data_length
+                    assert len(lines_utime) == self.data_length
+                    assert len(lines_stime) == self.data_length
 
                     for i in range(self.data_length):
 
@@ -349,20 +347,26 @@ class CpuHistory(MeasurementBase):
                         timestamp_stime, stime_str = lines_stime[i].split()
 
                         if timestamp_utime != timestamp_stime:
-                            print(f"Warning timestamps are not equal {timestamp_utime} and {timestamp_stime}")
+                            print(
+                                f"Warning timestamps are not equal {timestamp_utime} and {timestamp_stime}"
+                            )
 
-                        if utime_str == 'None':
+                        if utime_str == "None":
                             utime = 0
                         else:
-                            utime = int(float( utime_str))
+                            utime = int(float(utime_str))
 
-                        if stime_str =='None':
+                        if stime_str == "None":
                             stime = 0
                         else:
-                            stime = int(float( stime_str))
+                            stime = int(float(stime_str))
 
-                        cutime = 0  # glue cutime to zero, we do not have child processes
-                        cstime =  0  # glue cstime to zero, we do not have child processes
+                        cutime = (
+                            0  # glue cutime to zero, we do not have child processes
+                        )
+                        cstime = (
+                            0  # glue cstime to zero, we do not have child processes
+                        )
 
                         self.insert_line(
                             idx=self.row_id,
@@ -382,7 +386,6 @@ class CpuHistory(MeasurementBase):
         missing = self.data_length - sample
 
         assert missing == 0
-
 
     def scrap_data(self, thefile, measurement_index, binary):
         """Read measurement data from file /proc/pid/stat
@@ -404,7 +407,9 @@ class CpuHistory(MeasurementBase):
                         # It can happen that there are 61 lines measured
                         # e.g. in the 60s interval, we just ignore them
                         if sample >= self.data_length:
-                            logging.warning('Omitted a sample from mid %s', measurement_index)
+                            logging.warning(
+                                "Omitted a sample from mid %s", measurement_index
+                            )
                             continue
                         utime = int(entries[13])  # utime
                         stime = int(entries[14])  # stime
@@ -422,7 +427,6 @@ class CpuHistory(MeasurementBase):
                         )
                         sample += 1
                         self.row_id += 1
-
 
         except FileNotFoundError as err:
             logging.warning("File not found, skipping for now! %s", str(err))
@@ -451,17 +455,19 @@ class CpuHistory(MeasurementBase):
         for folder in folders:
             index = self.foldername_to_index(folder)
 
-            statsfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
+            statsfile = (
+                f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
+            )
 
-            if filename=="stat_mapper_stdout":
+            if filename == "stat_mapper_stdout":
                 filename_rrd1 = "gauge-mapper-c8y-utime"
                 filename_rrd2 = "gauge-mapper-c8y-stime"
-            elif filename ==  "stat_mosquitto_stdout":
+            elif filename == "stat_mosquitto_stdout":
                 filename_rrd1 = "gauge-mosquitto-utime"
                 filename_rrd2 = "gauge-mosquitto-stime"
             else:
 
-                raise SystemError("Cannot convert filename %s"%filename)
+                raise SystemError("Cannot convert filename %s" % filename)
 
             rrdfile1 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd1}.rrd.txt"
             rrdfile2 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd2}.rrd.txt"
@@ -471,9 +477,11 @@ class CpuHistory(MeasurementBase):
             elif os.path.exists(rrdfile1):
                 self.scrap_data_collectd(rrdfile1, rrdfile2, index)
             else:
-                #breakpoint()
-                #raise SystemError("File does not exist !!!")
-                logging.info("File does not exist !!! %s or %s"%(statsfile, filename_rrd1))
+                # breakpoint()
+                # raise SystemError("File does not exist !!!")
+                logging.info(
+                    "File does not exist !!! %s or %s" % (statsfile, filename_rrd1)
+                )
                 logging.info("Filling with zeros")
                 self.scrap_zeros(index)
 
@@ -610,6 +618,7 @@ class CpuHistoryStacked(MeasurementBase):
     def show(self):
         """Show content with matplotlib"""
         import matplotlib.pyplot as plt
+
         fig, axis = plt.subplots()
 
         for i in range(len(self.fields)):
@@ -660,34 +669,31 @@ class MemoryHistory(MeasurementBase):
         self.row_id = 0
 
     def scrap_zeros(self, measurement_index):
-        """Fill an empty measurement with zeros
-        """
+        """Fill an empty measurement with zeros"""
         for sample in range(self.data_length):
 
             self.insert_line(
                 idx=self.row_id,
                 mid=measurement_index,
                 sample=sample,
-                size = 0,
-                resident = 0,
-                shared = 0,
-                text = 0,
-                data = 0,
+                size=0,
+                resident=0,
+                shared=0,
+                text=0,
+                data=0,
             )
             self.row_id += 1
 
-
     def scrap_data_collectd(self, thefolder, measurement_index):
-        """Read measurement data from collectd exports
-        """
+        """Read measurement data from collectd exports"""
 
         if not os.path.exists(thefolder):
-            raise SystemError("Folder not existing %s"%thefolder)
+            raise SystemError("Folder not existing %s" % thefolder)
 
         types = ["size", "resident", "shared", "text", "data"]
-        db = { "size":{}, "resident":{}, "shared":{}, "text":{}, "data":{}  }
+        db = {"size": {}, "resident": {}, "shared": {}, "text": {}, "data": {}}
 
-        for idx,file in enumerate(types):
+        for idx, file in enumerate(types):
             # Iterate through all rrd exports
 
             myfile = f"gauge-mapper-c8y-{file}.rrd.txt"
@@ -695,32 +701,39 @@ class MemoryHistory(MeasurementBase):
 
             try:
                 with open(thefile) as thestats:
-                        lines = thestats.readlines()
+                    lines = thestats.readlines()
 
-                        assert len(lines)==self.data_length
+                    assert len(lines) == self.data_length
 
-                        for index in range(len(lines)):
-                            timestamp, utime_str = lines[index].split()
-                            if utime_str == "None":
-                                utime_str = 0
-                            db[file][index] = ( timestamp, utime_str)
+                    for index in range(len(lines)):
+                        timestamp, utime_str = lines[index].split()
+                        if utime_str == "None":
+                            utime_str = 0
+                        db[file][index] = (timestamp, utime_str)
 
             except FileNotFoundError as err:
                 logging.warning("File not found, skipping for now! %s", str(err))
 
-
         for sample in range(self.data_length):
-            #Warn if timestamps differ
+            # Warn if timestamps differ
 
-            size_stamp = int( float(db["size"][sample][0] ))
-            resident_stamp = int( float(db["resident"][sample][0] ))
-            shared_stamp = int( float(db["shared"][sample][0] ))
-            text_stamp = int( float(db["text"][sample][0] ))
-            data_stamp = int( float(db["data"][sample][0] ))
+            size_stamp = int(float(db["size"][sample][0]))
+            resident_stamp = int(float(db["resident"][sample][0]))
+            shared_stamp = int(float(db["shared"][sample][0]))
+            text_stamp = int(float(db["text"][sample][0]))
+            data_stamp = int(float(db["data"][sample][0]))
 
-            if not size_stamp == resident_stamp == shared_stamp == text_stamp ==data_stamp:
-                logging.info( "Warning: timestamps differ: %s %s %s %s %s"%(size_stamp, resident_stamp, shared_stamp, text_stamp, data_stamp))
-
+            if (
+                not size_stamp
+                == resident_stamp
+                == shared_stamp
+                == text_stamp
+                == data_stamp
+            ):
+                logging.info(
+                    "Warning: timestamps differ: %s %s %s %s %s"
+                    % (size_stamp, resident_stamp, shared_stamp, text_stamp, data_stamp)
+                )
 
         for sample in range(self.data_length):
 
@@ -728,11 +741,11 @@ class MemoryHistory(MeasurementBase):
                 idx=self.row_id,
                 mid=measurement_index,
                 sample=sample,
-                size = int( float(db["size"][sample][1] )),
-                resident = int( float(db["resident"][sample][1] )),
-                shared = int( float(db["shared"][sample][1] )),
-                text = int( float(db["text"][sample][1] )),
-                data = int( float(db["data"][sample][1] )),
+                size=int(float(db["size"][sample][1])),
+                resident=int(float(db["resident"][sample][1])),
+                shared=int(float(db["shared"][sample][1])),
+                text=int(float(db["text"][sample][1])),
+                data=int(float(db["data"][sample][1])),
             )
             self.row_id += 1
 
@@ -785,7 +798,9 @@ class MemoryHistory(MeasurementBase):
         for folder in folders:
             index = self.foldername_to_index(folder)
 
-            statsfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
+            statsfile = (
+                f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
+            )
 
             # Select one of them to check if we measured with collectd
             rrdfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/gauge-mapper-c8y-resident.rrd.txt"
@@ -796,9 +811,12 @@ class MemoryHistory(MeasurementBase):
             elif os.path.exists(rrdfile):
                 self.scrap_data_collectd(rrdfolder, index)
             else:
-                #breakpoint()
-                #raise SystemError("File does not exist !!!")
-                logging.info("Memory analytics does not exist !!! %s or %s"%(statsfile, rrdfile))
+                # breakpoint()
+                # raise SystemError("File does not exist !!!")
+                logging.info(
+                    "Memory analytics does not exist !!! %s or %s"
+                    % (statsfile, rrdfile)
+                )
                 logging.info("Filling with zeros")
                 self.scrap_zeros(index)
 

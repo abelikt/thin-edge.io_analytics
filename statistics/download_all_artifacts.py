@@ -195,7 +195,7 @@ if __name__ == "__main__":
     parser.add_argument("username", type=str, help="GitHub Username")
     args = parser.parse_args()
 
-    user= args.username
+    user = args.username
     lake = "~/DataLake"
 
     main(lake, user)
