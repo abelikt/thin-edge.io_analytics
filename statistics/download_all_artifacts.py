@@ -105,7 +105,7 @@ def get_artifacts_for_runid(runid, run_number, token, lake, user):
 
 def get_all_runs(token, user):
     """Download all GitHub Actions workflow runs.
-    Generator function that returns the next 50 runs from the web-ui
+    Generator function that returns the next 100 runs from the web-ui
     as list of dictionaries.
     """
 
@@ -123,7 +123,7 @@ def get_all_runs(token, user):
 
     while not empty:
         print(f"Request {index}")
-        params = {"per_page": "50", "page": index}
+        params = {"per_page": "100", "page": index}
         req = requests.get(url, params=params, auth=auth, headers=headers)
         stuff = json.loads(req.text)
 

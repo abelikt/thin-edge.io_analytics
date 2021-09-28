@@ -143,9 +143,14 @@ class MeasurementBase(ABC):
 
     def __init__(self, lake, name, data_amount, data_length, client, testmode):
 
+        # Amount of columns in the table
         self.data_amount = data_amount
+
+        # Length of the measurement in seconds
         self.data_length = data_length
+
         self.size = data_length * data_amount
+
         self.client = client
         self.lake = lake
         self.json_data = None
@@ -301,45 +306,55 @@ class CpuHistory(MeasurementBase):
     def scrap_data_collectd(self, thefile, thefile2, measurement_index, binary):
 
         sample = 0
-        with open(thefile) as thestats:
-            with open(thefile2) as thestats2:
-                lines = thestats.readlines()
-                lines2 = thestats2.readlines()
-                #for line in lines:
-                #    print(line)
-                for i in range(len(lines)):
-                    #print( lines[i].strip(), lines2[i].strip())
+        try:
+            with open(thefile) as thestats:
+                with open(thefile2) as thestats2:
+                    lines = thestats.readlines()
+                    lines2 = thestats2.readlines()
+                    #for line in lines:
+                    #    print(line)
 
-                    timestamp, utime_str = lines[i].split()
-                    timestamp2, stime_str = lines2[i].split()
-                    assert timestamp == timestamp2
+                    assert len(lines)==self.data_length
 
-                    if utime_str == 'None':
-                        utime = 0
-                    else:
-                        utime = int(float( utime_str))
+                    for i in range(len(lines)):
+                        #print( lines[i].strip(), lines2[i].strip())
 
-                    if stime_str =='None':
-                        stime = 0
-                    else:
-                        stime = int(float( stime_str))
+                        timestamp, utime_str = lines[i].split()
+                        timestamp2, stime_str = lines2[i].split()
 
-                    #print( utime, stime )
+                        if timestamp != timestamp2:
+                            print(f"Warning timestamps are not equal {timestamp} and {timestamp2}")
+                        #assert timestamp == timestamp2
 
-                    cutime = 0  # cutime
-                    cstime =  0  # cstime
+                        if utime_str == 'None':
+                            utime = 0
+                        else:
+                            utime = int(float( utime_str))
 
-                    self.insert_line(
-                        idx=self.row_id,
-                        mid=measurement_index,
-                        sample=sample,
-                        utime=utime,
-                        stime=stime,
-                        cutime=cutime,
-                        cstime=cstime,
-                    )
-                    sample += 1
-                    self.row_id += 1
+                        if stime_str =='None':
+                            stime = 0
+                        else:
+                            stime = int(float( stime_str))
+
+                        #print( utime, stime )
+
+                        cutime = 0  # cutime
+                        cstime =  0  # cstime
+
+                        self.insert_line(
+                            idx=self.row_id,
+                            mid=measurement_index,
+                            sample=sample,
+                            utime=utime,
+                            stime=stime,
+                            cutime=cutime,
+                            cstime=cstime,
+                        )
+                        sample += 1
+                        self.row_id += 1
+
+        except FileNotFoundError as err:
+            logging.warning("File not found, skipping for now! %s", str(err))
 
     def scrap_data(self, thefile, measurement_index, binary):
         """Read measurement data from file /proc/pid/stat
@@ -416,12 +431,12 @@ class CpuHistory(MeasurementBase):
                 filename_rrd1 = "gauge-mosquitto-utime"
                 filename_rrd2 = "gauge-mosquitto-stime"
             else:
-                print(filename)
-                raise SystemError("Ups")
+
+                raise SystemError("Cannot convert filename %s"%filename)
 
             rrdfile1 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd1}.rrd.txt"
             rrdfile2 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd2}.rrd.txt"
-            print(statsfile)
+
             if os.path.exists(statsfile):
                 self.scrap_data(statsfile, index, binary)
             elif os.path.exists(rrdfile1):
@@ -429,7 +444,7 @@ class CpuHistory(MeasurementBase):
             else:
                 #breakpoint()
                 #raise SystemError("File does not exist !!!")
-                print("Upsups")
+                print("File does not exist !!! %s or %s"%(statsfile, filename_rrd1))
 
     def insert_line(self, idx, mid, sample, utime, stime, cutime, cstime):
         """Insert a line into the table"""
@@ -616,7 +631,7 @@ class MemoryHistory(MeasurementBase):
     def scrap_data_collectd(self, thefile, mesaurement_index, arr):
         pass
 
-        folder = "/home/pi/DataLakeTest/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
+        folder = self.lake + "/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
 
         if thefile == "tedge-mapper":
             thefile = "mapper-c8y" # Adjust filename (TODO)
@@ -640,14 +655,20 @@ class MemoryHistory(MeasurementBase):
             myfile = f"gauge-mapper-c8y-{f}.rrd.txt"
             thefile = os.path.join(folder, myfile)
             index = 0
-            with open(thefile) as thestats:
-                    lines = thestats.readlines()
-                    for i in range(len(lines)):
-                        #print( lines[i].strip())
-                        timestamp, utime_str = lines[i].split()
-                        if utime_str == "None":
-                            utime_str = 0
-                        db[f][i] = ( timestamp, utime_str)
+            try:
+                with open(thefile) as thestats:
+                        lines = thestats.readlines()
+
+                        assert len(lines)==self.data_length
+
+                        for i in range(len(lines)):
+                            #print( lines[i].strip())
+                            timestamp, utime_str = lines[i].split()
+                            if utime_str == "None":
+                                utime_str = 0
+                            db[f][i] = ( timestamp, utime_str)
+            except FileNotFoundError as err:
+                logging.warning("File not found, skipping for now! %s", str(err))
 
         #print(db)
 
@@ -665,6 +686,7 @@ class MemoryHistory(MeasurementBase):
             )
             self.row_id += 1
 
+        logging.debug("Read %s Memory stats", sample)
 
     def scrap_data(self, thefile, mesaurement_index, arr):
         """Read measurement data from file"""

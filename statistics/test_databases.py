@@ -260,7 +260,7 @@ class TestCpuHistory:
         lake = os.path.expanduser("~/DataLakeTest")
         base = db.CpuHistory(lake, "name", 1, 60, None, None)
 
-        folder = "/home/pi/DataLakeTest/results_5_unpack/" \
+        folder = lake + "/results_5_unpack/" \
             + "PySys/publish_sawmill_record_statistics/Output/linux"
 
         thefile = os.path.join(folder, "gauge-mosquitto-utime.rrd.txt")
