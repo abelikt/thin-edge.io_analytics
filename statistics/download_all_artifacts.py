@@ -57,7 +57,7 @@ def download_artifact(url, name, run_number, token, lake, user):
 
     if os.path.exists(artifact_filename):
         print(f"Skipped {lake}/{name}.zip")
-        return
+        return False
 
     req = requests.get(url, auth=auth, headers=headers, stream=True)
 
@@ -65,6 +65,8 @@ def download_artifact(url, name, run_number, token, lake, user):
         for chunk in req.iter_content(chunk_size=128):
             thefile.write(chunk)
         print(f"Downloaded {lake}/{name}.zip")
+
+    return True
 
 
 def get_artifacts_for_runid(runid, run_number, token, lake, user):
@@ -95,8 +97,10 @@ def get_artifacts_for_runid(runid, run_number, token, lake, user):
         artifact_name = artifacts[0]["name"]
         artifact_url = artifacts[0]["archive_download_url"]
         print(artifact_url)
-        download_artifact(artifact_url, artifact_name, run_number, token, lake, user)
-        return artifact_url
+        ret = download_artifact(
+            artifact_url, artifact_name, run_number, token, lake, user
+        )
+        return ret
     else:
         print("No Artifact attached")
 
@@ -185,8 +189,16 @@ def main(lake, username):
 
     system_test_runs = get_all_system_test_runs(token, lake, username)
 
+    skip_counter = 0
     for run in system_test_runs:
-        get_artifacts_for_runid(run[0], run[1], token, lake, username)
+
+        ret = get_artifacts_for_runid(run[0], run[1], token, lake, username)
+        if ret == False:
+            skip_counter += 1
+
+        if skip_counter > 20:
+            print("Skipped already 20 times, lets hope we are done")
+            return
 
 
 if __name__ == "__main__":
