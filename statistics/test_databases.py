@@ -129,7 +129,7 @@ class TestMemoryHistory:
             mocker.call(exp.format(lake, folders[2]), 4, base),
         ]
         calls_c = [
-            mocker.call(exp_c.format(lake, folders[3]), 5, base),
+            mocker.call(exp_c.format(lake, folders[3]), 5),
         ]
 
         base.postprocess(folders, "name", "filename", "binary")
@@ -147,7 +147,7 @@ class TestMemoryHistory:
         base = db.MemoryHistory(lake, "name", 1, 60, None, None)
 
         with pytest.raises(SystemError):
-            base.scrap_data_collectd("bob", 0, "unused")
+            base.scrap_data_collectd("bob", 0)
 
 
     def test_scrap_data_collectd(self, mocker):
@@ -157,7 +157,7 @@ class TestMemoryHistory:
         base = db.MemoryHistory(lake, "name", 1, 60, None, None)
         folder = "results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
         thefolder = os.path.join(lake,folder)
-        base.scrap_data_collectd(thefolder, 0, "unused")
+        base.scrap_data_collectd(thefolder, 0)
 
         assert base.array[0].tolist() == [0, 0, 0, 5460, 1020,  866,  731, 2894]
         assert base.array[57].tolist() == [57, 0, 57, 5457, 1024,  866,  731, 2892]
@@ -232,10 +232,8 @@ class TestCpuHistory:
             "tedge_mapper",
         )
 
-        # mock.assert_called_once()
         assert mock.call_count == 3
         assert mock_c.call_count == 1
-        # mock.assert_called_with
 
 
     def test_postprocess_collectd_fail_wtf(self, mocker):
@@ -264,11 +262,11 @@ class TestCpuHistory:
         folder = lake + "/results_5_unpack/" \
             + "PySys/publish_sawmill_record_statistics/Output/linux"
 
-        thefile = os.path.join(folder, "gauge-mosquitto-utime.rrd.txt")
-        thefile2 = os.path.join(folder, "gauge-mosquitto-stime.rrd.txt")
+        thefile_utime = os.path.join(folder, "gauge-mosquitto-utime.rrd.txt")
+        thefile_stime = os.path.join(folder, "gauge-mosquitto-stime.rrd.txt")
         mid = 0
-        binary = None
-        base.scrap_data_collectd(thefile, thefile2, mid, binary)
+
+        base.scrap_data_collectd(thefile_utime, thefile_stime, mid)
 
         assert base.array[0].tolist() == [0, 0, 0,21,11,0,0]
         assert base.array[57].tolist() == [57, 0, 57,63,97,0,0]

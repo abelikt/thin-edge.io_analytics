@@ -306,6 +306,7 @@ class CpuHistory(MeasurementBase):
         self.row_id = 0
 
     def scrap_zeros(self, measurement_index):
+        """Fill a measurement with zeros"""
 
         sample = 0
         for i in range(self.data_length):
@@ -327,28 +328,28 @@ class CpuHistory(MeasurementBase):
             sample += 1
             self.row_id += 1
 
-    def scrap_data_collectd(self, thefile, thefile2, measurement_index, binary):
+    def scrap_data_collectd(self, file_utime, file_stime, measurement_index):
+        """Read measurement data from collectd export
+        """
 
         sample = 0
         try:
-            with open(thefile) as thestats:
-                with open(thefile2) as thestats2:
-                    lines = thestats.readlines()
-                    lines2 = thestats2.readlines()
-                    #for line in lines:
-                    #    print(line)
+            with open(file_utime) as thestats_utime:
+                with open(file_stime) as thestats_stime:
+                    lines_utime = thestats_utime.readlines()
+                    lines_stime = thestats_stime.readlines()
 
-                    assert len(lines)==self.data_length
 
-                    for i in range(len(lines)):
-                        #print( lines[i].strip(), lines2[i].strip())
+                    assert len(lines_utime)==self.data_length
+                    assert len(lines_stime)==self.data_length
 
-                        timestamp, utime_str = lines[i].split()
-                        timestamp2, stime_str = lines2[i].split()
+                    for i in range(self.data_length):
 
-                        if timestamp != timestamp2:
-                            print(f"Warning timestamps are not equal {timestamp} and {timestamp2}")
-                        #assert timestamp == timestamp2
+                        timestamp_utime, utime_str = lines_utime[i].split()
+                        timestamp_stime, stime_str = lines_stime[i].split()
+
+                        if timestamp_utime != timestamp_stime:
+                            print(f"Warning timestamps are not equal {timestamp_utime} and {timestamp_stime}")
 
                         if utime_str == 'None':
                             utime = 0
@@ -360,10 +361,8 @@ class CpuHistory(MeasurementBase):
                         else:
                             stime = int(float( stime_str))
 
-                        #print( utime, stime )
-
-                        cutime = 0  # cutime
-                        cstime =  0  # cstime
+                        cutime = 0  # glue cutime to zero, we do not have child processes
+                        cstime =  0  # glue cstime to zero, we do not have child processes
 
                         self.insert_line(
                             idx=self.row_id,
@@ -470,7 +469,7 @@ class CpuHistory(MeasurementBase):
             if os.path.exists(statsfile):
                 self.scrap_data(statsfile, index, binary)
             elif os.path.exists(rrdfile1):
-                self.scrap_data_collectd(rrdfile1, rrdfile2, index, self)
+                self.scrap_data_collectd(rrdfile1, rrdfile2, index)
             else:
                 #breakpoint()
                 #raise SystemError("File does not exist !!!")
@@ -661,6 +660,8 @@ class MemoryHistory(MeasurementBase):
         self.row_id = 0
 
     def scrap_zeros(self, measurement_index):
+        """Fill an empty measurement with zeros
+        """
         for sample in range(self.data_length):
 
             self.insert_line(
@@ -676,46 +677,53 @@ class MemoryHistory(MeasurementBase):
             self.row_id += 1
 
 
-    def scrap_data_collectd(self, thefolder, measurement_index, arr):
+    def scrap_data_collectd(self, thefolder, measurement_index):
+        """Read measurement data from collectd exports
+        """
 
         if not os.path.exists(thefolder):
             raise SystemError("Folder not existing %s"%thefolder)
 
-        thefile = "mapper-c8y"
-        filelist = [
-            f"gauge-{thefile}-data.rrd.txt",
-            f"gauge-{thefile}-resident.rrd.txt",
-            f"gauge-{thefile}-shared.rrd.txt",
-            f"gauge-{thefile}-size.rrd.txt",
-            f"gauge-{thefile}-text.rrd.txt",
-            ]
-
         types = ["size", "resident", "shared", "text", "data"]
         db = { "size":{}, "resident":{}, "shared":{}, "text":{}, "data":{}  }
-        for i,f in enumerate(types):
-            #print (i,f)
-            myfile = f"gauge-mapper-c8y-{f}.rrd.txt"
+
+        for idx,file in enumerate(types):
+            # Iterate through all rrd exports
+
+            myfile = f"gauge-mapper-c8y-{file}.rrd.txt"
             thefile = os.path.join(thefolder, myfile)
-            index = 0
+
             try:
                 with open(thefile) as thestats:
                         lines = thestats.readlines()
 
                         assert len(lines)==self.data_length
 
-                        for i in range(len(lines)):
-                            #print( lines[i].strip())
-                            timestamp, utime_str = lines[i].split()
+                        for index in range(len(lines)):
+                            timestamp, utime_str = lines[index].split()
                             if utime_str == "None":
                                 utime_str = 0
-                            db[f][i] = ( timestamp, utime_str)
+                            db[file][index] = ( timestamp, utime_str)
+
             except FileNotFoundError as err:
                 logging.warning("File not found, skipping for now! %s", str(err))
 
-        #print(db)
 
         for sample in range(self.data_length):
-            #print( db["size"][sample][1] )
+            #Warn if timestamps differ
+
+            size_stamp = int( float(db["size"][sample][0] ))
+            resident_stamp = int( float(db["resident"][sample][0] ))
+            shared_stamp = int( float(db["shared"][sample][0] ))
+            text_stamp = int( float(db["text"][sample][0] ))
+            data_stamp = int( float(db["data"][sample][0] ))
+
+            if not size_stamp == resident_stamp == shared_stamp == text_stamp ==data_stamp:
+                logging.info( "Warning: timestamps differ: %s %s %s %s %s"%(size_stamp, resident_stamp, shared_stamp, text_stamp, data_stamp))
+
+
+        for sample in range(self.data_length):
+
             self.insert_line(
                 idx=self.row_id,
                 mid=measurement_index,
@@ -727,8 +735,6 @@ class MemoryHistory(MeasurementBase):
                 data = int( float(db["data"][sample][1] )),
             )
             self.row_id += 1
-
-        logging.debug("Read %s Memory stats", sample)
 
     def scrap_data(self, thefile, measurement_index, arr):
         """Read measurement data from file"""
@@ -788,7 +794,7 @@ class MemoryHistory(MeasurementBase):
             if os.path.exists(statsfile):
                 self.scrap_data(statsfile, index, self)
             elif os.path.exists(rrdfile):
-                self.scrap_data_collectd(rrdfolder, index, self)
+                self.scrap_data_collectd(rrdfolder, index)
             else:
                 #breakpoint()
                 #raise SystemError("File does not exist !!!")
