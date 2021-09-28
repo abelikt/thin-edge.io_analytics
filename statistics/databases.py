@@ -301,7 +301,31 @@ class CpuHistory(MeasurementBase):
 
         super().__init__(lake, name, data_amount, data_length, client, testmode)
         self.array = np.zeros((self.size, 7), dtype=np.int32)
+
+        # The current row index
         self.row_id = 0
+
+    def scrap_zeros(self, measurement_index):
+
+        sample = 0
+        for i in range(self.data_length):
+
+            utime = 0
+            stime =  0
+            cutime = 0  # cutime
+            cstime =  0  # cstime
+
+            self.insert_line(
+                idx=self.row_id,
+                mid=measurement_index,
+                sample=sample,
+                utime=utime,
+                stime=stime,
+                cutime=cutime,
+                cstime=cstime,
+            )
+            sample += 1
+            self.row_id += 1
 
     def scrap_data_collectd(self, thefile, thefile2, measurement_index, binary):
 
@@ -356,6 +380,11 @@ class CpuHistory(MeasurementBase):
         except FileNotFoundError as err:
             logging.warning("File not found, skipping for now! %s", str(err))
 
+        missing = self.data_length - sample
+
+        assert missing == 0
+
+
     def scrap_data(self, thefile, measurement_index, binary):
         """Read measurement data from file /proc/pid/stat
 
@@ -403,6 +432,7 @@ class CpuHistory(MeasurementBase):
         # Can happen, depending on when the data recorder process is killed.
 
         missing = self.data_length - sample
+
         for miss in range(missing):
             self.insert_line(
                 idx=self.row_id,
@@ -444,7 +474,9 @@ class CpuHistory(MeasurementBase):
             else:
                 #breakpoint()
                 #raise SystemError("File does not exist !!!")
-                print("File does not exist !!! %s or %s"%(statsfile, filename_rrd1))
+                logging.info("File does not exist !!! %s or %s"%(statsfile, filename_rrd1))
+                logging.info("Filling with zeros")
+                self.scrap_zeros(index)
 
     def insert_line(self, idx, mid, sample, utime, stime, cutime, cstime):
         """Insert a line into the table"""
@@ -628,6 +660,22 @@ class MemoryHistory(MeasurementBase):
         self.client = client
         self.row_id = 0
 
+    def scrap_zeros(self, measaurement_index):
+        for sample in range(self.data_length):
+
+            self.insert_line(
+                idx=self.row_id,
+                mid=measaurement_index,
+                sample=sample,
+                size = 0,
+                resident = 0,
+                shared = 0,
+                text = 0,
+                data = 0,
+            )
+            self.row_id += 1
+
+
     def scrap_data_collectd(self, thefile, mesaurement_index, arr):
         pass
 
@@ -672,7 +720,7 @@ class MemoryHistory(MeasurementBase):
 
         #print(db)
 
-        for sample in range(60):
+        for sample in range(self.data_length):
             #print( db["size"][sample][1] )
             self.insert_line(
                 idx=self.row_id,
@@ -748,7 +796,9 @@ class MemoryHistory(MeasurementBase):
             else:
                 #breakpoint()
                 #raise SystemError("File does not exist !!!")
-                pass
+                logging.info("File does not exist !!! %s or %s"%(statsfile, rrdfile))
+                logging.info("Filling with zeros")
+                self.scrap_zeros(index)
 
     def insert_line(self, idx, mid, sample, size, resident, shared, text, data):
         """Insert a line into the table"""
