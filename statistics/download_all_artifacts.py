@@ -123,6 +123,8 @@ def get_all_runs(token, user):
 
     while not empty:
         print(f"Request {index}")
+
+        # larger values than 100 do not seem to have an effect
         params = {"per_page": "100", "page": index}
         req = requests.get(url, params=params, auth=auth, headers=headers)
         stuff = json.loads(req.text)

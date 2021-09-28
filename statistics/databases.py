@@ -660,12 +660,12 @@ class MemoryHistory(MeasurementBase):
         self.client = client
         self.row_id = 0
 
-    def scrap_zeros(self, measaurement_index):
+    def scrap_zeros(self, measurement_index):
         for sample in range(self.data_length):
 
             self.insert_line(
                 idx=self.row_id,
-                mid=measaurement_index,
+                mid=measurement_index,
                 sample=sample,
                 size = 0,
                 resident = 0,
@@ -676,7 +676,7 @@ class MemoryHistory(MeasurementBase):
             self.row_id += 1
 
 
-    def scrap_data_collectd(self, thefile, mesaurement_index, arr):
+    def scrap_data_collectd(self, thefile, measurement_index, arr):
         pass
 
         folder = self.lake + "/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
@@ -724,7 +724,7 @@ class MemoryHistory(MeasurementBase):
             #print( db["size"][sample][1] )
             self.insert_line(
                 idx=self.row_id,
-                mid=mesaurement_index,
+                mid=measurement_index,
                 sample=sample,
                 size = int( float(db["size"][sample][1] )),
                 resident = int( float(db["resident"][sample][1] )),
@@ -736,7 +736,7 @@ class MemoryHistory(MeasurementBase):
 
         logging.debug("Read %s Memory stats", sample)
 
-    def scrap_data(self, thefile, mesaurement_index, arr):
+    def scrap_data(self, thefile, measurement_index, arr):
         """Read measurement data from file"""
         with open(thefile) as thestats:
             lines = thestats.readlines()
@@ -752,7 +752,7 @@ class MemoryHistory(MeasurementBase):
 
                 arr.insert_line(
                     idx=self.row_id,
-                    mid=mesaurement_index,
+                    mid=measurement_index,
                     sample=sample,
                     size=size,
                     resident=resident,
@@ -769,7 +769,7 @@ class MemoryHistory(MeasurementBase):
 
             arr.insert_line(
                 idx=self.row_id,
-                mid=mesaurement_index,
+                mid=measurement_index,
                 sample=sample,
                 size=0,
                 resident=0,

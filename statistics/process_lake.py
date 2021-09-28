@@ -70,11 +70,11 @@ def get_relevant_measurement_folders(lake, earliest_valid):
 
     assert relevant_folders[-processing_range] == earliest_valid
 
-    logging.info(f"Procesing Range {processing_range}")
+    logging.info(f"Procesing range: {processing_range} measurements")
 
     logging.info("Procesing Build Numbers:")
     for m in relevant_folders[-processing_range:]:
-        logging.info(m.split("_")[1])
+        logging.info("    relevant: " + m.split("_")[1])
     logging.info("")
 
     return relevant_folders, processing_range
