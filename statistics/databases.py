@@ -676,18 +676,19 @@ class MemoryHistory(MeasurementBase):
             self.row_id += 1
 
 
-    def scrap_data_collectd(self, thefile, measurement_index, arr):
+    def scrap_data_collectd(self, thefolder, measurement_index, arr):
         pass
 
-        folder = self.lake + "/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
+        #folder = self.lake + "/results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
 
-        if thefile == "tedge-mapper":
-            thefile = "mapper-c8y" # Adjust filename (TODO)
-        elif thefile == "mosquitto":
-            pass
-        else:
-            raise SystemError("Unknown file / type")
+       # if thefile == "tedge-mapper":
+       #     thefile = "mapper-c8y" # Adjust filename (TODO)
+       # elif thefile == "mosquitto":
+       #     pass
+       # else:
+       #     raise SystemError("Unknown file / type %s"%thefile)
 
+        thefile = "mapper-c8y"
         filelist = [
             f"gauge-{thefile}-data.rrd.txt",
             f"gauge-{thefile}-resident.rrd.txt",
@@ -701,7 +702,7 @@ class MemoryHistory(MeasurementBase):
         for i,f in enumerate(types):
             #print (i,f)
             myfile = f"gauge-mapper-c8y-{f}.rrd.txt"
-            thefile = os.path.join(folder, myfile)
+            thefile = os.path.join(thefolder, myfile)
             index = 0
             try:
                 with open(thefile) as thestats:
@@ -787,16 +788,18 @@ class MemoryHistory(MeasurementBase):
 
             statsfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename}.out"
 
-            rrdfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/gauge.rrd.txt"
+            # Select one of them to check if we measured with collectd
+            rrdfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/gauge-mapper-c8y-resident.rrd.txt"
+            rrdfolder = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/"
 
             if os.path.exists(statsfile):
                 self.scrap_data(statsfile, index, self)
             elif os.path.exists(rrdfile):
-                self.scrap_data_collectd(rrdfile, index, self)
+                self.scrap_data_collectd(rrdfolder, index, self)
             else:
                 #breakpoint()
                 #raise SystemError("File does not exist !!!")
-                logging.info("File does not exist !!! %s or %s"%(statsfile, rrdfile))
+                logging.info("Memory analytics does not exist !!! %s or %s"%(statsfile, rrdfile))
                 logging.info("Filling with zeros")
                 self.scrap_zeros(index)
 
