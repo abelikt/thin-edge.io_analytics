@@ -121,7 +121,7 @@ class TestMemoryHistory:
         ]
 
         exp = "{}/{}/PySys/name/Output/linux/filename.out"
-        exp_c = "{}/{}/PySys/name/Output/linux/gauge.rrd.txt"
+        exp_c = "{}/{}/PySys/name/Output/linux/"
 
         calls = [
             mocker.call(exp.format(lake, folders[0]), 1, base),
@@ -155,9 +155,10 @@ class TestMemoryHistory:
         lake = os.path.expanduser("~/DataLakeTest")
 
         base = db.MemoryHistory(lake, "name", 1, 60, None, None)
-        base.scrap_data_collectd("tedge-mapper", 0, "unused")
+        folder = "results_5_unpack/PySys/publish_sawmill_record_statistics/Output/linux"
+        thefolder = os.path.join(lake,folder)
+        base.scrap_data_collectd(thefolder, 0, "unused")
 
-        #print(base.array)
         assert base.array[0].tolist() == [0, 0, 0, 5460, 1020,  866,  731, 2894]
         assert base.array[57].tolist() == [57, 0, 57, 5457, 1024,  866,  731, 2892]
         assert base.array[58].tolist() == [58, 0, 58, 0, 0, 0, 0, 0]
