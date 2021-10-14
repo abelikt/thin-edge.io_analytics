@@ -37,7 +37,7 @@ def unzip_results(lake):
                 subprocess.run(["unzip", child.name, "-d", new_folder], cwd=lake)
 
 
-def get_measurement_folders(lake: Path) -> list[Path]:
+def get_measurement_folders(lake):
     """Get a sorted ist of measurement folders
     Filename pattern: results_<id>_unpack.zip
     """
