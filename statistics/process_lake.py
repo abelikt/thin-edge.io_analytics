@@ -31,7 +31,10 @@ def unzip_results(lake):
             pass
         elif child.name.endswith(".zip"):
             logging.debug(child.name)
-            new_name = child.name.removesuffix(".zip")
+            # Only in Python 3.9
+            #new_name = child.name.removesuffix(".zip")
+            new_name = child.name[:-len(".zip")]
+
             new_folder = f"{new_name}_unpack/"
             if not os.path.exists(os.path.join(lake, new_folder)):
                 subprocess.run(["unzip", child.name, "-d", new_folder], cwd=lake)
