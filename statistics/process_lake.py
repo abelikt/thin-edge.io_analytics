@@ -263,7 +263,7 @@ def main():
         lake = os.path.expanduser("~/DataLake")
 
         # last earliest valid test run is 'results_107_unpack'
-        earliest_valid = "results_107_unpack"
+        earliest_valid = "results_400_unpack"
 
     if verbose:
         logging.info("Enabling verbose mode")
