@@ -63,8 +63,10 @@ def download_artifact(url, name, run_number, token, lake, user):
 
     with open(os.path.expanduser(artifact_filename), "wb") as thefile:
         for chunk in req.iter_content(chunk_size=128):
+
             if chunk.startswith(b'{"message"'):
-                raise SystemError("Something went wrong:", chunk)
+                raise SystemError("Something went wrong: We just drop off now. GH says expired !!!", chunk)
+                #raise SystemError("Something went wrong:", chunk)
 
             thefile.write(chunk)
         print(f"Downloaded {lake}/{name}.zip")
