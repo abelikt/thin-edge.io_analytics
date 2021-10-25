@@ -37,7 +37,9 @@ def unzip_results(lake):
 
             new_folder = f"{new_name}_unpack/"
             if not os.path.exists(os.path.join(lake, new_folder)):
-                subprocess.run(["unzip", child.name, "-d", new_folder], cwd=lake)
+                ret = subprocess.run(["unzip", child.name, "-d", new_folder], cwd=lake)
+                if ret.returncode !=0:
+                    raise SystemError("Cannot unpack %s", child.name)
 
 
 def get_measurement_folders(lake):
