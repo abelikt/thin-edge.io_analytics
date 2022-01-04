@@ -469,18 +469,24 @@ class CpuHistory(MeasurementBase):
 
                 raise SystemError("Cannot convert filename %s" % filename)
 
-            rrdfile1 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd1}.rrd.txt"
-            rrdfile2 = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd2}.rrd.txt"
+            rrdfile1 = f"{self.lake}/{folder}/PySys/analytics/{testname}/Output/linux/{filename_rrd1}.rrd.txt"
+            rrdfile2 = f"{self.lake}/{folder}/PySys/analytics/{testname}/Output/linux/{filename_rrd2}.rrd.txt"
+
+            # After moving tests into folders
+            rrdfile1_old = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd1}.rrd.txt"
+            rrdfile2_old = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/{filename_rrd2}.rrd.txt"
 
             if os.path.exists(statsfile):
                 self.scrap_data(statsfile, index, binary)
             elif os.path.exists(rrdfile1):
                 self.scrap_data_collectd(rrdfile1, rrdfile2, index)
+            elif os.path.exists(rrdfile1_old):
+                self.scrap_data_collectd(rrdfile1_old, rrdfile2_old, index)
             else:
                 # breakpoint()
                 # raise SystemError("File does not exist !!!")
                 logging.info(
-                    "File does not exist !!! %s or %s" % (statsfile, filename_rrd1)
+                    "CPU history file does not exist! %s or %s or %s" % (statsfile, rrdfile1, rrdfile2)
                 )
                 logging.info("Filling with zeros")
                 self.scrap_zeros(index)
@@ -803,13 +809,19 @@ class MemoryHistory(MeasurementBase):
             )
 
             # Select one of them to check if we measured with collectd
-            rrdfile = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/gauge-mapper-c8y-resident.rrd.txt"
-            rrdfolder = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/"
+            rrdfile = f"{self.lake}/{folder}/PySys/analytics/{testname}/Output/linux/gauge-mapper-c8y-resident.rrd.txt"
+            rrdfolder = f"{self.lake}/{folder}/PySys/analytics/{testname}/Output/linux/"
+
+            # After sorting tests into folders
+            rrdfile_old = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/gauge-mapper-c8y-resident.rrd.txt"
+            rrdfolder_old = f"{self.lake}/{folder}/PySys/{testname}/Output/linux/"
 
             if os.path.exists(statsfile):
                 self.scrap_data(statsfile, index, self)
             elif os.path.exists(rrdfile):
                 self.scrap_data_collectd(rrdfolder, index)
+            elif os.path.exists(rrdfile_old):
+                self.scrap_data_collectd(rrdfolder_old, index)
             else:
                 # breakpoint()
                 # raise SystemError("File does not exist !!!")
