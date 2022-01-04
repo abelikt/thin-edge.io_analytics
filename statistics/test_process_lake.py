@@ -442,7 +442,7 @@ def test_postprocess_vals_metadata():
 class TestMain:
     lake = os.path.expanduser("~/DataLake")
     testlake = os.path.expanduser("~/DataLakeTest")
-    earliest = "results_107_unpack"
+    earliest = "results_400_unpack"
     testearliest = "results_1_unpack"
 
     def test_main_with_testdata_nostyle_testdata(self, mocker):
