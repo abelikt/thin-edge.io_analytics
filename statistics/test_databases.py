@@ -122,7 +122,7 @@ class TestMemoryHistory:
         ]
 
         exp = "{}/{}/PySys/name/Output/linux/filename.out"
-        exp_c = "{}/{}/PySys/name/Output/linux/"
+        exp_c = "{}/{}/PySys/analytics/name/Output/linux/"
 
         calls = [
             mocker.call(exp.format(lake, folders[0]), 1, base),
