@@ -179,6 +179,12 @@ def get_all_system_test_runs(token, lake, user, runner):
                 )
                 system_test_runs.append((test_run["id"], run_number))
 
+                if run_number == 1:
+                    # Multilevel break: Will hit for newer workflows with
+                    # smaller run numbers
+                    return system_test_runs
+                    print(f"Found {len(system_test_runs)} test_runs")
+
     print(f"Found {len(system_test_runs)} test_runs")
 
     return system_test_runs
