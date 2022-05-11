@@ -130,7 +130,7 @@ def get_all_runs(token, user):
 
     auth = HTTPBasicAuth("abelikt", token)
 
-    index = 0  # Hint: 0 and 1 seem to have an identical meaning when we request
+    index = 1  # Hint: 0 and 1 seem to have an identical meaning when we request
     empty = False
 
     while not empty:
