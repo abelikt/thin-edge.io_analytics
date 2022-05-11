@@ -31,7 +31,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 
-def download_artifact(url, name, run_number, token, lake, user):
+def download_artifact(url, name, run_number, token, lake, user, runner):
     """Download the artifact and store it as a zip file.
     Also repair the filename if the name is outdated"""
 
@@ -42,7 +42,10 @@ def download_artifact(url, name, run_number, token, lake, user):
     print(f"Will try {lake}/{name}.zip aka results_{run_number}'")
 
     # Repair names from old test runs (many tries to the the name right)
-    if name == "results_":
+    if runner == 'run analytics':
+        #name = f"{runner}_results_{run_number}"
+        name = f"run_analytics_results_{run_number}"
+    elif name == "results_":
         name = f"results_{run_number}"
     elif name == "results_$RUN_NUMBER":
         name = f"results_{run_number}"
@@ -74,7 +77,7 @@ def download_artifact(url, name, run_number, token, lake, user):
     return True
 
 
-def get_artifacts_for_runid(runid, run_number, token, lake, user):
+def get_artifacts_for_runid(runid, run_number, token, lake, user, runner):
     """Download artifacts for a given runid"""
     # Here we need the runid and we get the artifact id
 
@@ -92,7 +95,7 @@ def get_artifacts_for_runid(runid, run_number, token, lake, user):
     text = json.loads(req.text)
 
     with open(
-        os.path.expanduser(f"{lake}/results_{run_number}_metadata.json"), "w"
+        os.path.expanduser(f"{lake}/{runner}_results_{run_number}_metadata.json"), "w"
     ) as ofile:
         ofile.write(json.dumps(text, indent=4))
 
@@ -103,7 +106,7 @@ def get_artifacts_for_runid(runid, run_number, token, lake, user):
         artifact_url = artifacts[0]["archive_download_url"]
         print(artifact_url)
         ret = download_artifact(
-            artifact_url, artifact_name, run_number, token, lake, user
+            artifact_url, artifact_name, run_number, token, lake, user, runner
         )
         return ret
     else:
@@ -155,7 +158,7 @@ def get_all_runs(token, user):
         yield stuff["workflow_runs"]
 
 
-def get_all_system_test_runs(token, lake, user):
+def get_all_system_test_runs(token, lake, user, runner):
     """Returns als system test runs as list of run_id and number"""
 
     system_test_runs = []
@@ -165,13 +168,13 @@ def get_all_system_test_runs(token, lake, user):
                 run_number = test_run["run_number"]
                 with open(
                     os.path.expanduser(
-                        f"{lake}/system_test_{run_number}_metadata.json"
+                        f"{lake}/{runner}_system_test_{run_number}_metadata.json"
                     ),
                     "w",
                 ) as ofile:
                     ofile.write(json.dumps(test_run, indent=4))
                 print(
-                    f"Found System Test Run with id {test_run['id']}"
+                    f"Found System Test Run {test_run['name']} with id {test_run['id']}"
                     f" run number {run_number} workflow id {test_run['workflow_id']}"
                 )
                 system_test_runs.append((test_run["id"], run_number))
@@ -191,13 +194,14 @@ def main(lake, username):
     else:
         print("Error environment variable THEGHTOKEN not set")
         sys.exit(1)
-
-    system_test_runs = get_all_system_test_runs(token, lake, username)
+    runner = 'run analytics'
+    print(f'Getting logs for runner {runner}')
+    system_test_runs = get_all_system_test_runs(token, lake, username, runner)
 
     skip_counter = 0
     for run in system_test_runs:
-
-        ret = get_artifacts_for_runid(run[0], run[1], token, lake, username)
+        print("Processing system test with runid {run[0]} and run number {run[1]}")
+        ret = get_artifacts_for_runid(run[0], run[1], token, lake, username, runner)
         if ret == False:
             skip_counter += 1
 
