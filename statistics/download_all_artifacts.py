@@ -164,7 +164,7 @@ def get_all_system_test_runs(token, lake, user, runner):
     system_test_runs = []
     for test_runs in get_all_runs(token, user):
         for test_run in test_runs:
-            if test_run["name"] == "system-test-workflow":
+            if test_run["name"] == runner:
                 run_number = test_run["run_number"]
                 with open(
                     os.path.expanduser(
@@ -200,7 +200,11 @@ def main(lake, username):
     else:
         print("Error environment variable THEGHTOKEN not set")
         sys.exit(1)
+
+    #runner = "system-test-workflow":
+    #runner = "ci_pipeline":
     runner = 'run analytics'
+
     print(f'Getting logs for runner {runner}')
     system_test_runs = get_all_system_test_runs(token, lake, username, runner)
 
