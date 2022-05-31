@@ -6,6 +6,7 @@ class TestDownloadArtifacts:
         token = "token"
         user = "user"
         lake = "lake"
+        runner = "run analytics"
         mocker.patch.dict("os.environ", {"THEGHTOKEN": "token"})
         runs = [
             ["789311136", "93"],
@@ -14,9 +15,9 @@ class TestDownloadArtifacts:
         ]
 
         calls = [
-            mocker.call("788264906", "91", token, lake, user),
-            mocker.call("789260232", "92", token, lake, user),
-            mocker.call("789311136", "93", token, lake, user),
+            mocker.call("788264906", "91", token, lake, user, runner),
+            mocker.call("789260232", "92", token, lake, user, runner),
+            mocker.call("789311136", "93", token, lake, user, runner),
         ]
 
         runmock = mocker.patch("download_all_artifacts.get_artifacts_for_runid")
@@ -28,7 +29,7 @@ class TestDownloadArtifacts:
 
         assert runmock.call_count == len(runs)
         runmock.assert_has_calls(calls, any_order=True)
-        smock.assert_called_with(token, lake, user)
+        smock.assert_called_with(token, lake, user, runner)
 
     def test_get_all_runs_empty(self, mocker):
 
@@ -74,10 +75,11 @@ class TestDownloadArtifacts:
 
     def test_get_all_system_test_runs_empty(self, mocker):
 
+        runner = "system-test-workflow"
         mocker.patch(
             "download_all_artifacts.get_all_runs", return_value=[[{"name": "myname"}]]
         )
-        ret = da.get_all_system_test_runs("token", "lake", "user")
+        ret = da.get_all_system_test_runs("token", "lake", "user", runner)
 
         assert ret == []
 
@@ -98,11 +100,12 @@ class TestDownloadArtifacts:
         )
         lake = "lake"
         user = "user"
+        runner = "system-test-workflow"
         mock = mocker.mock_open(read_data="data")
 
         mocker.patch("download_all_artifacts.open", mock)
 
-        ret = da.get_all_system_test_runs("token", lake, user)
+        ret = da.get_all_system_test_runs("token", lake, user, runner)
 
         assert ret == [
             (
@@ -125,9 +128,10 @@ class TestDownloadArtifacts:
         token = "token"
         lake = "lake"
         user = "user"
+        runner = "system-test-workflow"
         mocker.patch("download_all_artifacts.open")
 
-        da.get_artifacts_for_runid(runid, run_number, token, lake, user)
+        da.get_artifacts_for_runid(runid, run_number, token, lake, user, runner)
         dmock.assert_not_called()
 
     def test_get_artifacts_for_runid_one_artifact(self, mocker):
@@ -143,12 +147,13 @@ class TestDownloadArtifacts:
         token = "token"
         lake = "lake"
         user = "user"
+        runner = "system-test-workflow"
         mocker.patch("download_all_artifacts.open")
         url = f"https://api.github.com/repos/{user}/thin-edge.io/actions/runs/{runid}/artifacts"
 
-        da.get_artifacts_for_runid(runid, run_number, token, lake, user)
+        da.get_artifacts_for_runid(runid, run_number, token, lake, user, runner)
 
-        dmock.assert_called_once_with("theurl", "bob", 43, token, lake, user)
+        dmock.assert_called_once_with("theurl", "bob", 43, token, lake, user, runner)
         reqmock.assert_called_with(url, auth=mocker.ANY, headers=mocker.ANY)
 
     def test_download_artifact(self, mocker):
@@ -159,11 +164,12 @@ class TestDownloadArtifacts:
         token = "token"
         lake = "lake"
         user = "user"
+        runner = "system-test-workflow"
         rmock = mocker.patch("requests.get")
         mocker.patch("os.path.exists", return_value=False)
         mocker.patch("download_all_artifacts.open")
 
-        da.download_artifact(url, name, run_number, token, lake, user)
+        da.download_artifact(url, name, run_number, token, lake, user, runner)
 
         rmock.assert_called_once()
 
